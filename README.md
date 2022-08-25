@@ -1,6 +1,9 @@
 # Search of SSL Certification Information(SoSCI)
-## Search of SSL Certification Information
-### SSL 인증서 정보 검색
+<div>
+<img src="https://img.shields.io/badge/Python->=3.x-blue?logo=python&logoColor=white" />
+</div>
+
+## SSL 인증서 정보 검색(Search of SSL Certification Information)
 - https://happylie.tistory.com/156
 
 ### 설치 방법
