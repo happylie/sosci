@@ -30,7 +30,6 @@ class SSLInfo:
                 with ctx.wrap_socket(self.sock, server_hostname=host) as s:
                     self.ret = s.getpeercert()
         except Exception as err:
-            print("A")
             sys.exit(0)
 
     def __del__(self):
@@ -95,7 +94,10 @@ if __name__ == "__main__":
         if args.exp:
             print(obj)
         else:
-            print(json.loads(obj)['expireDate'])
+            ret = {
+                "expireDate": json.loads(obj)['expireDate']
+            }
+            print(json.dumps(ret))
         sys.exit(0)
     except Exception as err:
         print("main:: {err}".format(err=err))
