@@ -2,14 +2,10 @@
 # -*- coding: utf-8 -*-
 from urllib.parse import urlparse
 from urllib.request import urlopen
-from urllib.error import HTTPError
 from urllib.error import URLError
 
 
 class UrlPaser:
-    def __init__(self):
-        self.a = ""
-
     @staticmethod
     def __url_check(url):
         try:
@@ -18,9 +14,10 @@ class UrlPaser:
                 if status_code != 200:
                     return False
             return True
-        except HTTPError as err:
-            return False
         except URLError as err:
+            allow_code = [401, 402, 403, 404, 405]
+            if err.code in allow_code:
+                return True
             return False
 
     def get_parser(self, data):

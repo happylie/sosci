@@ -59,47 +59,81 @@ class SSLInfo:
         end_date = datetime.strptime(data['notAfter'], "%b %d %H:%M:%S %Y %Z")
         expire_date = self.__expire_date(end_date)
         ret = {
-            "subject": dict(i[0] for i in data['subject']),
-            "issuer":  dict(i[0] for i in data['issuer']),
-            "notBefore": str(start_date),
-            "notAfter": str(end_date),
-            "expireDate": expire_date,
-            "subjectAltName": subjectaltname_data
+            "status": {
+                "code": 0,
+                "msg": "SSL Certification Information"
+            },
+            "result": {
+                "subject": dict(i[0] for i in data['subject']),
+                "issuer": dict(i[0] for i in data['issuer']),
+                "notBefore": str(start_date),
+                "notAfter": str(end_date),
+                "expireDate": expire_date,
+                "subjectAltName": subjectaltname_data
+            }
         }
-        return json.dumps(ret)
+        return json.dumps(ret, indent=4, sort_keys=True)
 
     def run(self):
         return self.__convert_dict2json(self.ret)
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(prog='sosci.py', description='Search of SSL Certification Information(SoSCI)')
+    parser = argparse.ArgumentParser(
+        prog='sosci.py', description='Search of SSL Certification Information(SoSCI)',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    if len(sys.argv) == 1:
+        ret = {
+            "status": {
+                "code": 1,
+                "msg": "Input the URL"
+            },
+            "result": {}
+        }
+        print(json.dumps(ret, indent=4, sort_keys=True))
+        sys.exit(0)
+    parser.add_argument('url', type=str, help='Check URL(HTTPS URL or Hostname)')
+    parser.add_argument('-e', '--expire', action='store_true', dest='exp', help='Certification Expire Date')
+    parser.add_argument('-v', '--version', action='version', version='sosci v1.1')
     try:
-
-        parser.add_argument('-u', '--url', dest='url', type=str, help='Check URL(HTTPS URL or Hostname)')
-        parser.add_argument('-e', '--expire', dest='exp', action='store_false', help='Certification Expire Date')
-        parser.add_argument('-v', '--version', action='version', version='sosci v1.0')
         args = parser.parse_args()
-        if not args.url:
-            print('Input the URL')
-            sys.exit(0)
         up = UrlPaser().get_parser(args.url)
         if not up[0]:
-            print('URL is not valid')
+            ret = {
+                "status": {
+                    "code": 1,
+                    "msg": "URL is not valid"
+                },
+                "result": {}
+            }
+            print(json.dumps(ret, indent=4, sort_keys=True))
             sys.exit(0)
-        hostname = up[1]
-        port = up[2]
-        si = SSLInfo(hostname, port)
+        si = SSLInfo(up[1], up[2])
         obj = si.run()
         if args.exp:
-            print(obj)
-        else:
             ret = {
-                "expireDate": json.loads(obj)['expireDate']
+                "status": {
+                    "code": 0,
+                    "msg": "SSL Expire Date"
+                },
+                "result": {
+                    "expireDate": json.loads(obj)['result']['expireDate']
+                }
             }
-            print(json.dumps(ret))
+            print(json.dumps(ret, indent=4, sort_keys=True))
+        else:
+            print(obj)
         sys.exit(0)
     except Exception as err:
-        print("main:: {err}".format(err=err))
+        print(err)
+        ret = {
+            "status": {
+                "code": 1,
+                "msg": "ArgumentParser Error"
+            },
+            "result": {}
+        }
+        print(json.dumps(ret, indent=4, sort_keys=True))
         sys.exit(0)
 
